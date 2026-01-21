@@ -5,6 +5,7 @@ import { AppSidebar } from '@/components/layout/AppSidebar';
 import { Toolbar } from '@/components/layout/Toolbar';
 import { AssetGrid } from '@/components/assets/AssetGrid';
 import { MetadataPanel } from '@/components/panels/MetadataPanel';
+import { Lightbox } from '@/components/lightbox/Lightbox';
 
 const Index = () => {
   const [activeSection, setActiveSection] = useState('all');
@@ -13,6 +14,8 @@ const Index = () => {
   const [sortBy, setSortBy] = useState('date-desc');
   const [selectedAssets, setSelectedAssets] = useState<Set<string>>(new Set());
   const [activeAsset, setActiveAsset] = useState<Asset | null>(null);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [lightboxIndex, setLightboxIndex] = useState(0);
 
   // Filter and sort assets
   const filteredAssets = useMemo(() => {
@@ -80,8 +83,15 @@ const Index = () => {
   };
 
   const handleOpenAsset = (asset: Asset) => {
+    const index = filteredAssets.findIndex(a => a.id === asset.id);
+    setLightboxIndex(index >= 0 ? index : 0);
+    setLightboxOpen(true);
     setActiveAsset(asset);
-    // Also select it
+    setSelectedAssets(new Set([asset.id]));
+  };
+
+  const handleLightboxAssetChange = (asset: Asset) => {
+    setActiveAsset(asset);
     setSelectedAssets(new Set([asset.id]));
   };
 
@@ -116,7 +126,7 @@ const Index = () => {
           />
 
           {/* Metadata panel */}
-          {activeAsset && (
+          {activeAsset && !lightboxOpen && (
             <MetadataPanel
               asset={activeAsset}
               onClose={() => setActiveAsset(null)}
@@ -130,10 +140,19 @@ const Index = () => {
           <span>
             {selectedAssets.size > 0 
               ? `${selectedAssets.size} selected` 
-              : 'Click to select, Cmd+Click for multiple'}
+              : 'Click to select, Double-click to open lightbox'}
           </span>
         </div>
       </div>
+
+      {/* Lightbox */}
+      <Lightbox
+        assets={filteredAssets}
+        initialIndex={lightboxIndex}
+        isOpen={lightboxOpen}
+        onClose={() => setLightboxOpen(false)}
+        onAssetChange={handleLightboxAssetChange}
+      />
     </div>
   );
 };
