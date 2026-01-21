@@ -1,8 +1,8 @@
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import { Camera, Quote } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { getDailyQuote } from '@/lib/quotes';
+import { getRandomQuote } from '@/lib/quotes';
 
 interface LoginPageProps {
   onLogin: () => void;
@@ -11,8 +11,8 @@ interface LoginPageProps {
 export const LoginPage = ({ onLogin }: LoginPageProps) => {
   const [isLoading, setIsLoading] = useState(false);
   
-  // Get today's quote (consistent throughout the day)
-  const dailyQuote = useMemo(() => getDailyQuote(), []);
+  // Get a random quote on each render
+  const [dailyQuote] = useState(() => getRandomQuote());
 
   const handleGoogleSignIn = async () => {
     setIsLoading(true);
