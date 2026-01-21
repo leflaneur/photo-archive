@@ -15,6 +15,9 @@ export const AssetGrid = ({
   onSelectAsset, 
   onOpenAsset 
 }: AssetGridProps) => {
+  // Get the actual selected asset objects
+  const selectedAssetObjects = assets.filter(a => selectedAssets.has(a.id));
+
   return (
     <ScrollArea className="flex-1">
       <div className="p-4">
@@ -24,6 +27,7 @@ export const AssetGrid = ({
               key={asset.id}
               asset={asset}
               isSelected={selectedAssets.has(asset.id)}
+              selectedAssets={selectedAssetObjects}
               onSelect={onSelectAsset}
               onClick={onOpenAsset}
             />
