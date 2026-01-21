@@ -60,23 +60,23 @@ export const Toolbar = ({
   onOpenMapView,
 }: ToolbarProps) => {
   return (
-    <div className="h-14 px-4 border-b border-border bg-surface-1 flex items-center gap-3">
+    <div className="h-14 px-4 border-b border-white/[0.06] bg-black/40 backdrop-blur-xl flex items-center gap-3">
       {/* Search */}
       <div className="relative flex-1 max-w-md">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/40" />
         <Input
           type="text"
           placeholder="Search assets..."
           value={searchQuery}
           onChange={(e) => onSearchChange(e.target.value)}
-          className="pl-9 bg-surface-2 border-transparent focus:border-primary/50 focus:ring-primary/20"
+          className="pl-9 bg-white/[0.04] border-white/[0.08] focus:border-primary/50 focus:ring-primary/20 focus:bg-white/[0.06] placeholder:text-white/30 rounded-xl"
         />
       </div>
 
       {/* Selection actions */}
       {selectedCount > 0 && (
         <div className="flex items-center gap-2">
-          <div className="flex items-center gap-2 px-3 py-1.5 bg-primary/20 rounded-lg">
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-primary/15 backdrop-blur-sm rounded-xl border border-primary/20">
             <Check className="h-4 w-4 text-primary" />
             <span className="text-sm font-medium text-primary">
               {selectedCount} selected
@@ -104,11 +104,11 @@ export const Toolbar = ({
 
       {/* Sort */}
       <Select value={sortBy} onValueChange={onSortChange}>
-        <SelectTrigger className="w-40 bg-surface-2 border-transparent">
-          <ArrowUpDown className="h-4 w-4 mr-2 text-muted-foreground" />
+        <SelectTrigger className="w-40 bg-white/[0.04] border-white/[0.08] hover:bg-white/[0.06] rounded-xl">
+          <ArrowUpDown className="h-4 w-4 mr-2 text-white/40" />
           <SelectValue placeholder="Sort by" />
         </SelectTrigger>
-        <SelectContent>
+        <SelectContent className="bg-black/80 backdrop-blur-2xl border-white/10 rounded-xl">
           <SelectItem value="date-desc">Date (Newest)</SelectItem>
           <SelectItem value="date-asc">Date (Oldest)</SelectItem>
           <SelectItem value="name-asc">Name (A-Z)</SelectItem>
@@ -119,20 +119,20 @@ export const Toolbar = ({
       </Select>
 
       {/* Filters */}
-      <Button variant="outline" size="sm" className="bg-surface-2 border-transparent">
+      <Button variant="outline" size="sm" className="rounded-xl">
         <SlidersHorizontal className="h-4 w-4 mr-2" />
         Filters
       </Button>
 
       {/* View toggle */}
-      <div className="flex items-center bg-surface-2 rounded-lg p-1">
+      <div className="flex items-center bg-white/[0.04] backdrop-blur-sm rounded-xl p-1 border border-white/[0.06]">
         <button
           onClick={() => onViewModeChange('grid')}
           className={cn(
-            'p-1.5 rounded transition-colors',
+            'p-2 rounded-lg transition-all duration-200',
             viewMode === 'grid' 
-              ? 'bg-surface-3 text-foreground' 
-              : 'text-muted-foreground hover:text-foreground'
+              ? 'bg-white/[0.1] text-white shadow-glass-sm' 
+              : 'text-white/50 hover:text-white/80'
           )}
           title="Grid view"
         >
@@ -141,10 +141,10 @@ export const Toolbar = ({
         <button
           onClick={() => onViewModeChange('list')}
           className={cn(
-            'p-1.5 rounded transition-colors',
+            'p-2 rounded-lg transition-all duration-200',
             viewMode === 'list' 
-              ? 'bg-surface-3 text-foreground' 
-              : 'text-muted-foreground hover:text-foreground'
+              ? 'bg-white/[0.1] text-white shadow-glass-sm' 
+              : 'text-white/50 hover:text-white/80'
           )}
           title="List view"
         >
@@ -153,7 +153,7 @@ export const Toolbar = ({
         {onOpenMapView && (
           <button
             onClick={onOpenMapView}
-            className="p-1.5 rounded transition-colors text-muted-foreground hover:text-foreground"
+            className="p-2 rounded-lg transition-all duration-200 text-white/50 hover:text-white/80"
             title="Map view"
           >
             <MapPin className="h-4 w-4" />
@@ -162,8 +162,8 @@ export const Toolbar = ({
       </div>
 
       {/* Actions */}
-      <div className="flex items-center gap-1">
-        <Button variant="outline" size="sm" className="bg-surface-2 border-transparent">
+      <div className="flex items-center gap-1.5">
+        <Button variant="outline" size="sm" className="rounded-xl">
           <Upload className="h-4 w-4 mr-2" />
           Import
         </Button>
@@ -171,7 +171,7 @@ export const Toolbar = ({
         <Button 
           variant="outline" 
           size="sm" 
-          className="bg-surface-2 border-transparent"
+          className="rounded-xl"
           onClick={onManageCollections}
         >
           <Layers className="h-4 w-4 mr-2" />
@@ -180,11 +180,11 @@ export const Toolbar = ({
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="icon" className="bg-surface-2 border-transparent">
+            <Button variant="outline" size="icon" className="rounded-xl">
               <MoreHorizontal className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
+          <DropdownMenuContent align="end" className="bg-black/80 backdrop-blur-2xl border-white/10 rounded-xl">
             <DropdownMenuItem onClick={onBatchEdit} disabled={selectedCount === 0}>
               <Edit2 className="h-4 w-4 mr-2" />
               Batch Edit {selectedCount > 0 && `(${selectedCount})`}
@@ -193,7 +193,7 @@ export const Toolbar = ({
               <ExternalLink className="h-4 w-4 mr-2" />
               Publish {selectedCount > 0 && `(${selectedCount})`}
             </DropdownMenuItem>
-            <DropdownMenuSeparator />
+            <DropdownMenuSeparator className="bg-white/10" />
             <DropdownMenuItem>
               <Download className="h-4 w-4 mr-2" />
               Export Selection
@@ -202,8 +202,8 @@ export const Toolbar = ({
               <Layers className="h-4 w-4 mr-2" />
               Manage Collections
             </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem className="text-destructive" disabled={selectedCount === 0}>
+            <DropdownMenuSeparator className="bg-white/10" />
+            <DropdownMenuItem className="text-destructive focus:text-destructive" disabled={selectedCount === 0}>
               <Trash2 className="h-4 w-4 mr-2" />
               Delete Selected
             </DropdownMenuItem>

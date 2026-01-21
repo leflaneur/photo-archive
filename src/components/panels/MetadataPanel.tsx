@@ -59,11 +59,11 @@ export const MetadataPanel = ({ asset, onClose, onColourLabelChange }: MetadataP
   };
 
   return (
-    <aside className="w-80 h-full bg-surface-1 border-l border-border flex flex-col animate-slide-in-right">
+    <aside className="w-80 h-full flex flex-col animate-slide-in-right bg-gradient-to-b from-black/70 to-black/90 backdrop-blur-2xl border-l border-white/[0.06]">
       {/* Header */}
-      <div className="p-4 border-b border-border flex items-center justify-between">
-        <h2 className="font-semibold text-foreground">Details</h2>
-        <Button variant="ghost" size="icon" onClick={onClose}>
+      <div className="p-4 border-b border-white/[0.06] flex items-center justify-between">
+        <h2 className="font-semibold text-white">Details</h2>
+        <Button variant="ghost" size="icon" onClick={onClose} className="rounded-xl hover:bg-white/10">
           <X className="h-4 w-4" />
         </Button>
       </div>
@@ -71,7 +71,7 @@ export const MetadataPanel = ({ asset, onClose, onColourLabelChange }: MetadataP
       <ScrollArea className="flex-1">
         <div className="p-4 space-y-6">
           {/* Preview */}
-          <div className="rounded-lg overflow-hidden bg-surface-2">
+          <div className="rounded-xl overflow-hidden bg-white/[0.03] border border-white/[0.06]">
             <img 
               src={asset.thumbnailUrl} 
               alt={asset.filename}

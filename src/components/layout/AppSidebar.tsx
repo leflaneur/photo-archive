@@ -236,18 +236,20 @@ export const AppSidebar = ({ activeSection, onSectionChange, onLogout }: AppSide
 
   return (
     <aside className={cn(
-      'w-64 h-full bg-sidebar border-r border-sidebar-border flex flex-col transition-all duration-200',
-      isDragging && 'bg-sidebar/95'
+      'w-64 h-full flex flex-col transition-all duration-300',
+      'bg-gradient-to-b from-black/60 to-black/80',
+      'backdrop-blur-2xl border-r border-white/[0.06]',
+      isDragging && 'bg-black/70'
     )}>
       {/* Logo / Header */}
-      <div className="p-4 border-b border-sidebar-border">
+      <div className="p-4 border-b border-white/[0.06]">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center">
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary/30 to-primary/10 flex items-center justify-center shadow-glass-sm">
             <Camera className="h-4 w-4 text-primary" />
           </div>
           <div>
-            <h1 className="font-semibold text-foreground">Flaneur</h1>
-            <p className="text-xs text-muted-foreground">{stats.totalAssets.toLocaleString()} assets</p>
+            <h1 className="font-semibold text-white tracking-tight">Flaneur</h1>
+            <p className="text-xs text-white/50">{stats.totalAssets.toLocaleString()} assets</p>
           </div>
         </div>
       </div>
@@ -383,7 +385,7 @@ export const AppSidebar = ({ activeSection, onSectionChange, onLogout }: AppSide
       </ScrollArea>
 
       {/* Footer */}
-      <div className="p-2 border-t border-sidebar-border space-y-1">
+      <div className="p-2 border-t border-white/[0.06] space-y-1">
         <DropTarget
           id="settings"
           icon={Settings}
@@ -395,7 +397,7 @@ export const AppSidebar = ({ activeSection, onSectionChange, onLogout }: AppSide
         {onLogout && (
           <button
             onClick={onLogout}
-            className="nav-item w-full text-muted-foreground hover:text-destructive"
+            className="nav-item w-full text-white/50 hover:text-red-400 hover:bg-red-500/10"
           >
             <LogOut className="h-4 w-4 shrink-0" />
             <span className="flex-1 text-left truncate">Sign Out</span>

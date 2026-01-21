@@ -235,7 +235,7 @@ const Index = () => {
           </div>
 
           {/* Status bar */}
-          <div className="h-8 px-4 border-t border-border bg-surface-1 flex items-center justify-between text-xs text-muted-foreground">
+          <div className="h-8 px-4 border-t border-white/[0.06] bg-black/40 backdrop-blur-xl flex items-center justify-between text-xs text-white/50">
             <span>{filteredAssets.length} assets</span>
             <span>
               {selectedAssets.size > 0 
