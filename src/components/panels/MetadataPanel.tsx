@@ -1,4 +1,4 @@
-import { X, Star, Download, Edit2, Trash2, ExternalLink, Calendar, Camera, Aperture, Clock, MapPin } from 'lucide-react';
+import { X, Star, Download, Edit2, Trash2, ExternalLink, Calendar, Camera, Aperture, Clock, MapPin, Maximize2 } from 'lucide-react';
 import { Asset } from '@/types/asset';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -10,6 +10,7 @@ interface MetadataPanelProps {
   asset: Asset | null;
   onClose: () => void;
   onColourLabelChange?: (colour: ColourLabel | undefined) => void;
+  onExpandToFullPage?: () => void;
 }
 
 const formatFileSize = (bytes: number) => {
@@ -51,7 +52,7 @@ const RatingStars = ({ rating, size = 'md' }: { rating: number; size?: 'sm' | 'm
   );
 };
 
-export const MetadataPanel = ({ asset, onClose, onColourLabelChange }: MetadataPanelProps) => {
+export const MetadataPanel = ({ asset, onClose, onColourLabelChange, onExpandToFullPage }: MetadataPanelProps) => {
   if (!asset) return null;
 
   const handleColourChange = (colour: ColourLabel | undefined) => {
@@ -59,13 +60,26 @@ export const MetadataPanel = ({ asset, onClose, onColourLabelChange }: MetadataP
   };
 
   return (
-    <aside className="w-80 h-full flex flex-col animate-slide-in-right bg-gradient-to-b from-black/70 to-black/90 backdrop-blur-2xl border-l border-white/[0.06]">
+    <aside className="w-96 h-full flex flex-col animate-slide-in-right bg-gradient-to-b from-black/70 to-black/90 backdrop-blur-2xl border-l border-white/[0.06]">
       {/* Header */}
       <div className="p-4 border-b border-white/[0.06] flex items-center justify-between">
         <h2 className="font-semibold text-white">Details</h2>
-        <Button variant="ghost" size="icon" onClick={onClose} className="rounded-xl hover:bg-white/10">
-          <X className="h-4 w-4" />
-        </Button>
+        <div className="flex items-center gap-1">
+          {onExpandToFullPage && (
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={onExpandToFullPage} 
+              className="rounded-xl hover:bg-white/10"
+              title="Open full details page"
+            >
+              <Maximize2 className="h-4 w-4" />
+            </Button>
+          )}
+          <Button variant="ghost" size="icon" onClick={onClose} className="rounded-xl hover:bg-white/10">
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
       </div>
 
       <ScrollArea className="flex-1">

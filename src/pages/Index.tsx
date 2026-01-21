@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useRef } from 'react';
+import { useState, useMemo, useCallback, useRef, useEffect } from 'react';
 import { Asset, Collection } from '@/types/asset';
 import { mockAssets, mockCollections as initialCollections } from '@/data/mockAssets';
 import { AppSidebar } from '@/components/layout/AppSidebar';
@@ -13,6 +13,8 @@ import { PublishDialog } from '@/components/publish/PublishDialog';
 import { ImportDialog } from '@/components/import/ImportDialog';
 import { ExportDialog } from '@/components/export/ExportDialog';
 import { KeyboardShortcutsDialog } from '@/components/help/KeyboardShortcutsDialog';
+import { AssetDetailPage } from '@/components/asset/AssetDetailPage';
+import { LibraryScanner } from '@/components/scanner/LibraryScanner';
 import { LoginPage } from '@/components/auth/LoginPage';
 import { MapView } from '@/components/views/MapView';
 import { DragProvider } from '@/contexts/DragContext';
@@ -41,6 +43,8 @@ const Index = () => {
   const [showImportDialog, setShowImportDialog] = useState(false);
   const [showExportDialog, setShowExportDialog] = useState(false);
   const [showShortcutsDialog, setShowShortcutsDialog] = useState(false);
+  const [showAssetDetailPage, setShowAssetDetailPage] = useState(false);
+  const [showLibraryScanner, setShowLibraryScanner] = useState(false);
   const [filters, setFilters] = useState<FilterState>({
     statuses: [],
     colorLabels: [],
@@ -191,7 +195,7 @@ const Index = () => {
 
   // Register keyboard shortcuts
   useKeyboardShortcuts({
-    enabled: isAuthenticated && !showImportDialog && !showExportDialog,
+    enabled: isAuthenticated && !showImportDialog && !showExportDialog && !showAssetDetailPage,
     selectedAssets,
     handlers: {
       onSelectAll: handleSelectAll,
@@ -232,22 +236,21 @@ const Index = () => {
   });
 
   // Listen for ? key to show shortcuts
-  const handleKeyDown = useCallback((e: KeyboardEvent) => {
-    if (e.key === '?' && !e.metaKey && !e.ctrlKey) {
-      const target = e.target as HTMLElement;
-      if (target.tagName !== 'INPUT' && target.tagName !== 'TEXTAREA') {
-        setShowShortcutsDialog(true);
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === '?' && !e.metaKey && !e.ctrlKey) {
+        const target = e.target as HTMLElement;
+        if (target.tagName !== 'INPUT' && target.tagName !== 'TEXTAREA') {
+          setShowShortcutsDialog(true);
+        }
       }
-    }
-  }, []);
-
-  // Register ? key listener
-  useMemo(() => {
-    if (isAuthenticated) {
-      window.addEventListener('keydown', handleKeyDown);
-      return () => window.removeEventListener('keydown', handleKeyDown);
-    }
-  }, [isAuthenticated, handleKeyDown]);
+    };
+    
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isAuthenticated]);
 
   // Show login page if not authenticated - AFTER all hooks
   if (!isAuthenticated) {
@@ -355,6 +358,25 @@ const Index = () => {
     toast.success(`Imported ${files.length} assets`);
   };
 
+  // Library scanner handler
+  const handleScannerImport = (files: any[]) => {
+    console.log('Scanner imported files:', files);
+    toast.success(`Added ${files.length} files to library`);
+  };
+
+  // Open asset detail page
+  const handleOpenDetailPage = () => {
+    if (activeAsset) {
+      setShowAssetDetailPage(true);
+    }
+  };
+
+  // Handle navigation in detail page
+  const handleDetailPageNavigate = (asset: Asset) => {
+    setActiveAsset(asset);
+    setSelectedAssets(new Set([asset.id]));
+  };
+
   const handleLogout = () => {
     setIsAuthenticated(false);
     toast.success('Signed out successfully');
@@ -378,6 +400,7 @@ const Index = () => {
           activeSection={activeSection} 
           onSectionChange={setActiveSection}
           onLogout={handleLogout}
+          onOpenScanner={() => setShowLibraryScanner(true)}
         />
 
         {/* Main content */}
@@ -435,6 +458,7 @@ const Index = () => {
               <MetadataPanel
                 asset={activeAsset}
                 onClose={() => setActiveAsset(null)}
+                onExpandToFullPage={handleOpenDetailPage}
               />
             )}
           </div>
@@ -458,6 +482,16 @@ const Index = () => {
           onClose={() => setLightboxOpen(false)}
           onAssetChange={handleLightboxAssetChange}
         />
+
+        {/* Asset Detail Page */}
+        {showAssetDetailPage && activeAsset && (
+          <AssetDetailPage
+            asset={activeAsset}
+            assets={filteredAssets}
+            onClose={() => setShowAssetDetailPage(false)}
+            onNavigate={handleDetailPageNavigate}
+          />
+        )}
 
         {/* Collection Manager Dialog */}
         <CollectionManager
@@ -493,6 +527,13 @@ const Index = () => {
           onClose={() => setShowExportDialog(false)}
           assets={selectedAssetObjects}
           onExport={handleExportComplete}
+        />
+
+        {/* Library Scanner */}
+        <LibraryScanner
+          isOpen={showLibraryScanner}
+          onClose={() => setShowLibraryScanner(false)}
+          onImportFiles={handleScannerImport}
         />
 
         {/* Keyboard Shortcuts Dialog */}
