@@ -1,7 +1,8 @@
-import { useState } from 'react';
-import { Camera } from 'lucide-react';
+import { useState, useMemo } from 'react';
+import { Camera, Quote } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { getDailyQuote } from '@/lib/quotes';
 
 interface LoginPageProps {
   onLogin: () => void;
@@ -9,6 +10,9 @@ interface LoginPageProps {
 
 export const LoginPage = ({ onLogin }: LoginPageProps) => {
   const [isLoading, setIsLoading] = useState(false);
+  
+  // Get today's quote (consistent throughout the day)
+  const dailyQuote = useMemo(() => getDailyQuote(), []);
 
   const handleGoogleSignIn = async () => {
     setIsLoading(true);
@@ -43,15 +47,22 @@ export const LoginPage = ({ onLogin }: LoginPageProps) => {
             </div>
           </div>
 
-          {/* Tagline */}
+          {/* Daily Quote */}
           <div className="max-w-lg">
-            <h2 className="text-5xl font-bold text-white mb-6 leading-[1.1] tracking-tight">
-              Your personal digital asset management
-            </h2>
-            <p className="text-xl text-white/50 leading-relaxed">
-              Organise, curate, and publish your photography collection. 
-              From film scans to digital captures, all in one place.
-            </p>
+            <div className="flex items-start gap-4">
+              <Quote className="h-10 w-10 text-primary/40 flex-shrink-0 mt-1" />
+              <div>
+                <blockquote className="text-3xl font-serif text-white mb-4 leading-relaxed italic">
+                  "{dailyQuote.text}"
+                </blockquote>
+                <p className="text-lg text-white/50">
+                  — {dailyQuote.author}
+                  {dailyQuote.work && (
+                    <span className="text-white/30">, {dailyQuote.work}</span>
+                  )}
+                </p>
+              </div>
+            </div>
           </div>
 
           {/* Stats */}
