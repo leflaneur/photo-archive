@@ -1,3 +1,4 @@
+import { RefObject } from 'react';
 import { 
   Search, 
   Grid3X3, 
@@ -16,6 +17,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -44,6 +46,11 @@ interface ToolbarProps {
   onManageCollections: () => void;
   onPublish: () => void;
   onOpenMapView?: () => void;
+  onToggleFilters?: () => void;
+  onImport?: () => void;
+  onExport?: () => void;
+  activeFilterCount?: number;
+  searchInputRef?: RefObject<HTMLInputElement>;
 }
 
 export const Toolbar = ({
@@ -58,6 +65,11 @@ export const Toolbar = ({
   onManageCollections,
   onPublish,
   onOpenMapView,
+  onToggleFilters,
+  onImport,
+  onExport,
+  activeFilterCount = 0,
+  searchInputRef,
 }: ToolbarProps) => {
   return (
     <div className="h-14 px-4 border-b border-white/[0.06] bg-black/40 backdrop-blur-xl flex items-center gap-3">
@@ -65,8 +77,9 @@ export const Toolbar = ({
       <div className="relative flex-1 max-w-md">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/40" />
         <Input
+          ref={searchInputRef}
           type="text"
-          placeholder="Search assets..."
+          placeholder="Search assets... (⌘F)"
           value={searchQuery}
           onChange={(e) => onSearchChange(e.target.value)}
           className="pl-9 bg-white/[0.04] border-white/[0.08] focus:border-primary/50 focus:ring-primary/20 focus:bg-white/[0.06] placeholder:text-white/30 rounded-xl"
@@ -119,9 +132,21 @@ export const Toolbar = ({
       </Select>
 
       {/* Filters */}
-      <Button variant="outline" size="sm" className="rounded-xl">
+      <Button 
+        variant="outline" 
+        size="sm" 
+        className="rounded-xl relative"
+        onClick={onToggleFilters}
+      >
         <SlidersHorizontal className="h-4 w-4 mr-2" />
         Filters
+        {activeFilterCount > 0 && (
+          <Badge 
+            className="absolute -top-2 -right-2 h-5 w-5 p-0 flex items-center justify-center text-[10px] bg-primary"
+          >
+            {activeFilterCount}
+          </Badge>
+        )}
       </Button>
 
       {/* View toggle */}
@@ -163,7 +188,12 @@ export const Toolbar = ({
 
       {/* Actions */}
       <div className="flex items-center gap-1.5">
-        <Button variant="outline" size="sm" className="rounded-xl">
+        <Button 
+          variant="outline" 
+          size="sm" 
+          className="rounded-xl"
+          onClick={onImport}
+        >
           <Upload className="h-4 w-4 mr-2" />
           Import
         </Button>
@@ -194,9 +224,9 @@ export const Toolbar = ({
               Publish {selectedCount > 0 && `(${selectedCount})`}
             </DropdownMenuItem>
             <DropdownMenuSeparator className="bg-white/10" />
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={onExport} disabled={selectedCount === 0}>
               <Download className="h-4 w-4 mr-2" />
-              Export Selection
+              Export {selectedCount > 0 && `(${selectedCount})`}
             </DropdownMenuItem>
             <DropdownMenuItem onClick={onManageCollections}>
               <Layers className="h-4 w-4 mr-2" />
