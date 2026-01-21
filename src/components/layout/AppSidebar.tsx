@@ -228,9 +228,10 @@ interface AppSidebarProps {
   activeSection: string;
   onSectionChange: (section: string) => void;
   onLogout?: () => void;
+  onOpenScanner?: () => void;
 }
 
-export const AppSidebar = ({ activeSection, onSectionChange, onLogout }: AppSidebarProps) => {
+export const AppSidebar = ({ activeSection, onSectionChange, onLogout, onOpenScanner }: AppSidebarProps) => {
   const [activeFolderId, setActiveFolderId] = useState<string>();
   const { isDragging } = useDrag();
 
@@ -304,6 +305,16 @@ export const AppSidebar = ({ activeSection, onSectionChange, onLogout }: AppSide
               onClick={() => onSectionChange('uploads')}
               acceptDrop={false}
             />
+            {onOpenScanner && (
+              <DropTarget
+                id="scanner"
+                icon={HardDrive}
+                label="Scan Library"
+                isActive={false}
+                onClick={onOpenScanner}
+                acceptDrop={false}
+              />
+            )}
           </div>
 
           {/* Workflow */}
