@@ -1,13 +1,15 @@
-import { X, Star, Download, Edit2, Trash2, ExternalLink, Calendar, Camera, Aperture, Clock } from 'lucide-react';
+import { X, Star, Download, Edit2, Trash2, ExternalLink, Calendar, Camera, Aperture, Clock, MapPin } from 'lucide-react';
 import { Asset } from '@/types/asset';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
+import { ColourLabelPicker, ColourLabelDot, ColourLabel } from './ColourLabelPicker';
 
 interface MetadataPanelProps {
   asset: Asset | null;
   onClose: () => void;
+  onColourLabelChange?: (colour: ColourLabel | undefined) => void;
 }
 
 const formatFileSize = (bytes: number) => {
@@ -49,8 +51,12 @@ const RatingStars = ({ rating, size = 'md' }: { rating: number; size?: 'sm' | 'm
   );
 };
 
-export const MetadataPanel = ({ asset, onClose }: MetadataPanelProps) => {
+export const MetadataPanel = ({ asset, onClose, onColourLabelChange }: MetadataPanelProps) => {
   if (!asset) return null;
+
+  const handleColourChange = (colour: ColourLabel | undefined) => {
+    onColourLabelChange?.(colour);
+  };
 
   return (
     <aside className="w-80 h-full bg-surface-1 border-l border-border flex flex-col animate-slide-in-right">
@@ -85,7 +91,18 @@ export const MetadataPanel = ({ asset, onClose }: MetadataPanelProps) => {
                 {asset.status.charAt(0).toUpperCase() + asset.status.slice(1)}
               </span>
               <RatingStars rating={asset.rating} />
+              {asset.colorLabel && <ColourLabelDot colour={asset.colorLabel} size="md" />}
             </div>
+          </div>
+
+          {/* Colour Label */}
+          <div className="panel-section">
+            <h4 className="text-sm font-medium text-foreground mb-3">Colour Label</h4>
+            <ColourLabelPicker 
+              value={asset.colorLabel} 
+              onChange={handleColourChange}
+              size="lg"
+            />
           </div>
 
           {/* Quick Actions */}

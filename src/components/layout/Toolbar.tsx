@@ -11,7 +11,8 @@ import {
   Edit2,
   Layers,
   ExternalLink,
-  Trash2
+  Trash2,
+  MapPin
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -42,6 +43,7 @@ interface ToolbarProps {
   onBatchEdit: () => void;
   onManageCollections: () => void;
   onPublish: () => void;
+  onOpenMapView?: () => void;
 }
 
 export const Toolbar = ({
@@ -55,6 +57,7 @@ export const Toolbar = ({
   onBatchEdit,
   onManageCollections,
   onPublish,
+  onOpenMapView,
 }: ToolbarProps) => {
   return (
     <div className="h-14 px-4 border-b border-border bg-surface-1 flex items-center gap-3">
@@ -131,6 +134,7 @@ export const Toolbar = ({
               ? 'bg-surface-3 text-foreground' 
               : 'text-muted-foreground hover:text-foreground'
           )}
+          title="Grid view"
         >
           <Grid3X3 className="h-4 w-4" />
         </button>
@@ -142,9 +146,19 @@ export const Toolbar = ({
               ? 'bg-surface-3 text-foreground' 
               : 'text-muted-foreground hover:text-foreground'
           )}
+          title="List view"
         >
           <List className="h-4 w-4" />
         </button>
+        {onOpenMapView && (
+          <button
+            onClick={onOpenMapView}
+            className="p-1.5 rounded transition-colors text-muted-foreground hover:text-foreground"
+            title="Map view"
+          >
+            <MapPin className="h-4 w-4" />
+          </button>
+        )}
       </div>
 
       {/* Actions */}
