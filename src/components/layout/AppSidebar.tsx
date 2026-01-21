@@ -13,7 +13,8 @@ import {
   Sparkles,
   Camera,
   HardDrive,
-  Plus
+  Plus,
+  LogOut
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { mockFolders, mockCollections, stats } from '@/data/mockAssets';
@@ -93,11 +94,11 @@ const DropTarget = ({
       style={{ paddingLeft: `${12 + indent * 16}px` }}
     >
       <Icon className={cn(
-        'h-4 w-4 shrink-0 transition-colors',
+        'h-4 w-4 shrink-0 transition-colours',
         isOver && 'text-primary'
       )} />
       <span className={cn(
-        'flex-1 text-left truncate transition-colors',
+        'flex-1 text-left truncate transition-colours',
         isOver && 'text-primary font-medium'
       )}>
         {label}
@@ -177,23 +178,23 @@ const FolderItem = ({ folder, level = 0, activeId, onSelect }: FolderItemProps) 
         {hasChildren ? (
           isOpen ? (
             <ChevronDown className={cn(
-              'h-4 w-4 shrink-0 text-muted-foreground transition-colors',
+              'h-4 w-4 shrink-0 text-muted-foreground transition-colours',
               isOver && 'text-primary'
             )} />
           ) : (
             <ChevronRight className={cn(
-              'h-4 w-4 shrink-0 text-muted-foreground transition-colors',
+              'h-4 w-4 shrink-0 text-muted-foreground transition-colours',
               isOver && 'text-primary'
             )} />
           )
         ) : (
           <Folder className={cn(
-            'h-4 w-4 shrink-0 transition-colors',
+            'h-4 w-4 shrink-0 transition-colours',
             isOver && 'text-primary'
           )} />
         )}
         <span className={cn(
-          'flex-1 text-left truncate transition-colors',
+          'flex-1 text-left truncate transition-colours',
           isOver && 'text-primary font-medium'
         )}>
           {folder.name}
@@ -226,9 +227,10 @@ const FolderItem = ({ folder, level = 0, activeId, onSelect }: FolderItemProps) 
 interface AppSidebarProps {
   activeSection: string;
   onSectionChange: (section: string) => void;
+  onLogout?: () => void;
 }
 
-export const AppSidebar = ({ activeSection, onSectionChange }: AppSidebarProps) => {
+export const AppSidebar = ({ activeSection, onSectionChange, onLogout }: AppSidebarProps) => {
   const [activeFolderId, setActiveFolderId] = useState<string>();
   const { isDragging } = useDrag();
 
@@ -244,7 +246,7 @@ export const AppSidebar = ({ activeSection, onSectionChange }: AppSidebarProps) 
             <Camera className="h-4 w-4 text-primary" />
           </div>
           <div>
-            <h1 className="font-semibold text-foreground">Photo Archive</h1>
+            <h1 className="font-semibold text-foreground">Flaneur</h1>
             <p className="text-xs text-muted-foreground">{stats.totalAssets.toLocaleString()} assets</p>
           </div>
         </div>
@@ -284,12 +286,12 @@ export const AppSidebar = ({ activeSection, onSectionChange }: AppSidebarProps) 
               acceptDrop={false}
             />
             <DropTarget
-              id="favorites"
+              id="favourites"
               icon={Star}
-              label="Favorites"
+              label="Favourites"
               count={127}
-              isActive={activeSection === 'favorites'}
-              onClick={() => onSectionChange('favorites')}
+              isActive={activeSection === 'favourites'}
+              onClick={() => onSectionChange('favourites')}
             />
             <DropTarget
               id="uploads"
@@ -381,7 +383,7 @@ export const AppSidebar = ({ activeSection, onSectionChange }: AppSidebarProps) 
       </ScrollArea>
 
       {/* Footer */}
-      <div className="p-2 border-t border-sidebar-border">
+      <div className="p-2 border-t border-sidebar-border space-y-1">
         <DropTarget
           id="settings"
           icon={Settings}
@@ -390,6 +392,15 @@ export const AppSidebar = ({ activeSection, onSectionChange }: AppSidebarProps) 
           onClick={() => onSectionChange('settings')}
           acceptDrop={false}
         />
+        {onLogout && (
+          <button
+            onClick={onLogout}
+            className="nav-item w-full text-muted-foreground hover:text-destructive"
+          >
+            <LogOut className="h-4 w-4 shrink-0" />
+            <span className="flex-1 text-left truncate">Sign Out</span>
+          </button>
+        )}
       </div>
     </aside>
   );

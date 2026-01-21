@@ -1,14 +1,14 @@
 import { Asset, Collection, Folder } from '@/types/asset';
 
-// Generate placeholder image URLs with varied colors
+// Generate placeholder image URLs with varied colours
 const generatePlaceholder = (id: number, width = 400, height = 400) => {
-  const colors = [
+  const colours = [
     '1a1a2e', '16213e', '0f3460', '533483', 
     '2c3e50', '34495e', '7f8c8d', '95a5a6',
     '1e3a5f', '2d4a6a', '3d5a75', '4a6a80'
   ];
-  const color = colors[id % colors.length];
-  return `https://via.placeholder.com/${width}x${height}/${color}/ffffff?text=IMG_${String(id).padStart(4, '0')}`;
+  const colour = colours[id % colours.length];
+  return `https://via.placeholder.com/${width}x${height}/${colour}/ffffff?text=IMG_${String(id).padStart(4, '0')}`;
 };
 
 export const mockAssets: Asset[] = Array.from({ length: 48 }, (_, i) => {
@@ -45,7 +45,7 @@ export const mockAssets: Asset[] = Array.from({ length: 48 }, (_, i) => {
     tags: ['landscape', 'nature', 'travel', 'portrait', 'street', 'architecture']
       .sort(() => Math.random() - 0.5)
       .slice(0, Math.floor(Math.random() * 3) + 1),
-    collections: ['Favorites', 'Portfolio', 'Recent Edits', 'To Review']
+    collections: ['Favourites', 'Portfolio', 'Recent Edits', 'To Review']
       .sort(() => Math.random() - 0.5)
       .slice(0, Math.floor(Math.random() * 2)),
     rating: Math.floor(Math.random() * 6),
@@ -61,7 +61,7 @@ export const mockAssets: Asset[] = Array.from({ length: 48 }, (_, i) => {
 });
 
 export const mockCollections: Collection[] = [
-  { id: 'col-1', name: 'Favorites', assetCount: 127, isSmartCollection: false, createdAt: '2024-01-15' },
+  { id: 'col-1', name: 'Favourites', assetCount: 127, isSmartCollection: false, createdAt: '2024-01-15' },
   { id: 'col-2', name: 'Portfolio', assetCount: 45, isSmartCollection: false, createdAt: '2024-02-20' },
   { id: 'col-3', name: 'Recent Edits', assetCount: 23, isSmartCollection: true, createdAt: '2024-03-10' },
   { id: 'col-4', name: 'To Review', assetCount: 89, isSmartCollection: true, createdAt: '2024-03-15' },
