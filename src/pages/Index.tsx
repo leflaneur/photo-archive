@@ -259,6 +259,7 @@ const Index = () => {
           isOpen={showCollectionManager}
           onClose={() => setShowCollectionManager(false)}
           collections={collections}
+          assets={filteredAssets}
           onCreateCollection={handleCreateCollection}
           onDeleteCollection={handleDeleteCollection}
           onEditCollection={handleEditCollection}
