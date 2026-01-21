@@ -10,6 +10,7 @@ import { Lightbox } from '@/components/lightbox/Lightbox';
 import { CollectionManager } from '@/components/collections/CollectionManager';
 import { PublishDialog } from '@/components/publish/PublishDialog';
 import { LoginPage } from '@/components/auth/LoginPage';
+import { MapView } from '@/components/views/MapView';
 import { DragProvider } from '@/contexts/DragContext';
 import { toast } from 'sonner';
 
@@ -27,6 +28,7 @@ const Index = () => {
   const [showBatchEdit, setShowBatchEdit] = useState(false);
   const [showCollectionManager, setShowCollectionManager] = useState(false);
   const [showPublishDialog, setShowPublishDialog] = useState(false);
+  const [showMapView, setShowMapView] = useState(false);
   const [collections, setCollections] = useState<Collection[]>(initialCollections);
 
   // Filter and sort assets - must be called before any conditional returns
@@ -202,6 +204,7 @@ const Index = () => {
             onBatchEdit={handleBatchEdit}
             onManageCollections={() => setShowCollectionManager(true)}
             onPublish={handlePublish}
+            onOpenMapView={() => setShowMapView(true)}
           />
 
           {/* Asset grid/list */}
@@ -269,6 +272,18 @@ const Index = () => {
           onPublish={handlePublishComplete}
           onConfigureDestination={handleConfigureDestination}
         />
+
+        {/* Map View */}
+        {showMapView && (
+          <MapView
+            assets={filteredAssets}
+            onSelectAsset={(asset) => {
+              setShowMapView(false);
+              handleOpenAsset(asset);
+            }}
+            onClose={() => setShowMapView(false)}
+          />
+        )}
       </div>
     </DragProvider>
   );
