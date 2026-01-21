@@ -9,10 +9,12 @@ import { BatchEditPanel, BatchChanges } from '@/components/panels/BatchEditPanel
 import { Lightbox } from '@/components/lightbox/Lightbox';
 import { CollectionManager } from '@/components/collections/CollectionManager';
 import { PublishDialog } from '@/components/publish/PublishDialog';
+import { LoginPage } from '@/components/auth/LoginPage';
 import { DragProvider } from '@/contexts/DragContext';
 import { toast } from 'sonner';
 
 const Index = () => {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [activeSection, setActiveSection] = useState('all');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [searchQuery, setSearchQuery] = useState('');
@@ -28,6 +30,11 @@ const Index = () => {
   const [showPublishDialog, setShowPublishDialog] = useState(false);
   const [collections, setCollections] = useState<Collection[]>(initialCollections);
 
+  // Show login page if not authenticated
+  if (!isAuthenticated) {
+    return <LoginPage onLogin={() => setIsAuthenticated(true)} />;
+  }
+
   // Filter and sort assets
   const filteredAssets = useMemo(() => {
     let result = [...mockAssets];
@@ -41,7 +48,7 @@ const Index = () => {
       result = result.filter(a => a.status === 'approved');
     } else if (activeSection === 'published') {
       result = result.filter(a => a.status === 'published');
-    } else if (activeSection === 'favorites') {
+    } else if (activeSection === 'favourites') {
       result = result.filter(a => a.rating >= 4);
     }
 
@@ -165,12 +172,13 @@ const Index = () => {
     if (type === 'flickr') {
       toast.info('Flickr integration requires API configuration', {
         description: 'Connect Lovable Cloud to securely store your Flickr API credentials.',
-        action: {
-          label: 'Learn More',
-          onClick: () => {},
-        },
       });
     }
+  };
+
+  const handleLogout = () => {
+    setIsAuthenticated(false);
+    toast.success('Signed out successfully');
   };
 
   return (
@@ -179,7 +187,8 @@ const Index = () => {
         {/* Sidebar */}
         <AppSidebar 
           activeSection={activeSection} 
-          onSectionChange={setActiveSection} 
+          onSectionChange={setActiveSection}
+          onLogout={handleLogout}
         />
 
         {/* Main content */}
@@ -230,7 +239,7 @@ const Index = () => {
             <span>{filteredAssets.length} assets</span>
             <span>
               {selectedAssets.size > 0 
-                ? `${selectedAssets.size} selected — drag to organize` 
+                ? `${selectedAssets.size} selected — drag to organise` 
                 : 'Click to select, drag to collections or folders'}
             </span>
           </div>
