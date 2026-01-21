@@ -7,7 +7,11 @@ import {
   Download,
   Upload,
   MoreHorizontal,
-  Check
+  Check,
+  Edit2,
+  Layers,
+  ExternalLink,
+  Trash2
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -35,6 +39,9 @@ interface ToolbarProps {
   sortBy: string;
   onSortChange: (sort: string) => void;
   selectedCount: number;
+  onBatchEdit: () => void;
+  onManageCollections: () => void;
+  onPublish: () => void;
 }
 
 export const Toolbar = ({
@@ -45,6 +52,9 @@ export const Toolbar = ({
   sortBy,
   onSortChange,
   selectedCount,
+  onBatchEdit,
+  onManageCollections,
+  onPublish,
 }: ToolbarProps) => {
   return (
     <div className="h-14 px-4 border-b border-border bg-surface-1 flex items-center gap-3">
@@ -60,13 +70,32 @@ export const Toolbar = ({
         />
       </div>
 
-      {/* Selection indicator */}
+      {/* Selection actions */}
       {selectedCount > 0 && (
-        <div className="flex items-center gap-2 px-3 py-1.5 bg-primary/20 rounded-lg">
-          <Check className="h-4 w-4 text-primary" />
-          <span className="text-sm font-medium text-primary">
-            {selectedCount} selected
-          </span>
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-primary/20 rounded-lg">
+            <Check className="h-4 w-4 text-primary" />
+            <span className="text-sm font-medium text-primary">
+              {selectedCount} selected
+            </span>
+          </div>
+          
+          <Button 
+            size="sm" 
+            variant="secondary"
+            onClick={onBatchEdit}
+          >
+            <Edit2 className="h-4 w-4 mr-1" />
+            Edit
+          </Button>
+          
+          <Button 
+            size="sm" 
+            onClick={onPublish}
+          >
+            <ExternalLink className="h-4 w-4 mr-1" />
+            Publish
+          </Button>
         </div>
       )}
 
@@ -124,6 +153,17 @@ export const Toolbar = ({
           <Upload className="h-4 w-4 mr-2" />
           Import
         </Button>
+        
+        <Button 
+          variant="outline" 
+          size="sm" 
+          className="bg-surface-2 border-transparent"
+          onClick={onManageCollections}
+        >
+          <Layers className="h-4 w-4 mr-2" />
+          Collections
+        </Button>
+
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" size="icon" className="bg-surface-2 border-transparent">
@@ -131,14 +171,28 @@ export const Toolbar = ({
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={onBatchEdit} disabled={selectedCount === 0}>
+              <Edit2 className="h-4 w-4 mr-2" />
+              Batch Edit {selectedCount > 0 && `(${selectedCount})`}
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={onPublish} disabled={selectedCount === 0}>
+              <ExternalLink className="h-4 w-4 mr-2" />
+              Publish {selectedCount > 0 && `(${selectedCount})`}
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
             <DropdownMenuItem>
               <Download className="h-4 w-4 mr-2" />
               Export Selection
             </DropdownMenuItem>
+            <DropdownMenuItem onClick={onManageCollections}>
+              <Layers className="h-4 w-4 mr-2" />
+              Manage Collections
+            </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>Batch Edit</DropdownMenuItem>
-            <DropdownMenuItem>Create Collection</DropdownMenuItem>
-            <DropdownMenuItem className="text-destructive">Delete Selected</DropdownMenuItem>
+            <DropdownMenuItem className="text-destructive" disabled={selectedCount === 0}>
+              <Trash2 className="h-4 w-4 mr-2" />
+              Delete Selected
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>

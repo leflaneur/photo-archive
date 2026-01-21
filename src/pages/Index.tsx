@@ -1,12 +1,16 @@
 import { useState, useMemo } from 'react';
-import { Asset } from '@/types/asset';
-import { mockAssets } from '@/data/mockAssets';
+import { Asset, Collection } from '@/types/asset';
+import { mockAssets, mockCollections as initialCollections } from '@/data/mockAssets';
 import { AppSidebar } from '@/components/layout/AppSidebar';
 import { Toolbar } from '@/components/layout/Toolbar';
 import { AssetGrid } from '@/components/assets/AssetGrid';
 import { MetadataPanel } from '@/components/panels/MetadataPanel';
+import { BatchEditPanel, BatchChanges } from '@/components/panels/BatchEditPanel';
 import { Lightbox } from '@/components/lightbox/Lightbox';
+import { CollectionManager } from '@/components/collections/CollectionManager';
+import { PublishDialog } from '@/components/publish/PublishDialog';
 import { DragProvider } from '@/contexts/DragContext';
+import { toast } from 'sonner';
 
 const Index = () => {
   const [activeSection, setActiveSection] = useState('all');
@@ -17,6 +21,12 @@ const Index = () => {
   const [activeAsset, setActiveAsset] = useState<Asset | null>(null);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
+  
+  // New state for panels and dialogs
+  const [showBatchEdit, setShowBatchEdit] = useState(false);
+  const [showCollectionManager, setShowCollectionManager] = useState(false);
+  const [showPublishDialog, setShowPublishDialog] = useState(false);
+  const [collections, setCollections] = useState<Collection[]>(initialCollections);
 
   // Filter and sort assets
   const filteredAssets = useMemo(() => {
@@ -70,6 +80,12 @@ const Index = () => {
     return result;
   }, [activeSection, searchQuery, sortBy]);
 
+  // Get selected asset objects
+  const selectedAssetObjects = useMemo(() => 
+    filteredAssets.filter(a => selectedAssets.has(a.id)),
+    [filteredAssets, selectedAssets]
+  );
+
   const handleSelectAsset = (asset: Asset, multi: boolean) => {
     setSelectedAssets(prev => {
       const next = new Set(prev);
@@ -96,6 +112,67 @@ const Index = () => {
     setSelectedAssets(new Set([asset.id]));
   };
 
+  // Batch edit handlers
+  const handleBatchEdit = () => {
+    if (selectedAssets.size === 0) {
+      toast.error('Please select assets to edit');
+      return;
+    }
+    setShowBatchEdit(true);
+    setActiveAsset(null);
+  };
+
+  const handleApplyBatchChanges = (changes: BatchChanges) => {
+    // In a real app, this would update the assets in the database
+    console.log('Applying batch changes:', changes, 'to assets:', selectedAssetObjects);
+    // For now, we just show a success message (handled in BatchEditPanel)
+  };
+
+  // Collection handlers
+  const handleCreateCollection = (collection: Omit<Collection, 'id' | 'createdAt'>) => {
+    const newCollection: Collection = {
+      ...collection,
+      id: `col-${Date.now()}`,
+      createdAt: new Date().toISOString(),
+    };
+    setCollections(prev => [...prev, newCollection]);
+  };
+
+  const handleDeleteCollection = (id: string) => {
+    setCollections(prev => prev.filter(c => c.id !== id));
+  };
+
+  const handleEditCollection = (id: string, updates: Partial<Collection>) => {
+    setCollections(prev => 
+      prev.map(c => c.id === id ? { ...c, ...updates } : c)
+    );
+  };
+
+  // Publish handlers
+  const handlePublish = () => {
+    if (selectedAssets.size === 0) {
+      toast.error('Please select assets to publish');
+      return;
+    }
+    setShowPublishDialog(true);
+  };
+
+  const handlePublishComplete = (destinationId: string, options: any) => {
+    console.log('Publishing to:', destinationId, 'with options:', options);
+  };
+
+  const handleConfigureDestination = (type: string) => {
+    if (type === 'flickr') {
+      toast.info('Flickr integration requires API configuration', {
+        description: 'Connect Lovable Cloud to securely store your Flickr API credentials.',
+        action: {
+          label: 'Learn More',
+          onClick: () => {},
+        },
+      });
+    }
+  };
+
   return (
     <DragProvider>
       <div className="h-screen flex bg-background overflow-hidden">
@@ -116,6 +193,9 @@ const Index = () => {
             sortBy={sortBy}
             onSortChange={setSortBy}
             selectedCount={selectedAssets.size}
+            onBatchEdit={handleBatchEdit}
+            onManageCollections={() => setShowCollectionManager(true)}
+            onPublish={handlePublish}
           />
 
           {/* Asset grid/list */}
@@ -127,8 +207,17 @@ const Index = () => {
               onOpenAsset={handleOpenAsset}
             />
 
+            {/* Batch Edit Panel */}
+            {showBatchEdit && selectedAssetObjects.length > 0 && (
+              <BatchEditPanel
+                selectedAssets={selectedAssetObjects}
+                onClose={() => setShowBatchEdit(false)}
+                onApplyChanges={handleApplyBatchChanges}
+              />
+            )}
+
             {/* Metadata panel */}
-            {activeAsset && !lightboxOpen && (
+            {activeAsset && !lightboxOpen && !showBatchEdit && (
               <MetadataPanel
                 asset={activeAsset}
                 onClose={() => setActiveAsset(null)}
@@ -154,6 +243,25 @@ const Index = () => {
           isOpen={lightboxOpen}
           onClose={() => setLightboxOpen(false)}
           onAssetChange={handleLightboxAssetChange}
+        />
+
+        {/* Collection Manager Dialog */}
+        <CollectionManager
+          isOpen={showCollectionManager}
+          onClose={() => setShowCollectionManager(false)}
+          collections={collections}
+          onCreateCollection={handleCreateCollection}
+          onDeleteCollection={handleDeleteCollection}
+          onEditCollection={handleEditCollection}
+        />
+
+        {/* Publish Dialog */}
+        <PublishDialog
+          isOpen={showPublishDialog}
+          onClose={() => setShowPublishDialog(false)}
+          assetCount={selectedAssets.size}
+          onPublish={handlePublishComplete}
+          onConfigureDestination={handleConfigureDestination}
         />
       </div>
     </DragProvider>
