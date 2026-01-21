@@ -6,6 +6,7 @@ import { Toolbar } from '@/components/layout/Toolbar';
 import { AssetGrid } from '@/components/assets/AssetGrid';
 import { MetadataPanel } from '@/components/panels/MetadataPanel';
 import { Lightbox } from '@/components/lightbox/Lightbox';
+import { DragProvider } from '@/contexts/DragContext';
 
 const Index = () => {
   const [activeSection, setActiveSection] = useState('all');
@@ -96,64 +97,66 @@ const Index = () => {
   };
 
   return (
-    <div className="h-screen flex bg-background overflow-hidden">
-      {/* Sidebar */}
-      <AppSidebar 
-        activeSection={activeSection} 
-        onSectionChange={setActiveSection} 
-      />
-
-      {/* Main content */}
-      <div className="flex-1 flex flex-col min-w-0">
-        {/* Toolbar */}
-        <Toolbar
-          viewMode={viewMode}
-          onViewModeChange={setViewMode}
-          searchQuery={searchQuery}
-          onSearchChange={setSearchQuery}
-          sortBy={sortBy}
-          onSortChange={setSortBy}
-          selectedCount={selectedAssets.size}
+    <DragProvider>
+      <div className="h-screen flex bg-background overflow-hidden">
+        {/* Sidebar */}
+        <AppSidebar 
+          activeSection={activeSection} 
+          onSectionChange={setActiveSection} 
         />
 
-        {/* Asset grid/list */}
-        <div className="flex-1 flex min-h-0">
-          <AssetGrid
-            assets={filteredAssets}
-            selectedAssets={selectedAssets}
-            onSelectAsset={handleSelectAsset}
-            onOpenAsset={handleOpenAsset}
+        {/* Main content */}
+        <div className="flex-1 flex flex-col min-w-0">
+          {/* Toolbar */}
+          <Toolbar
+            viewMode={viewMode}
+            onViewModeChange={setViewMode}
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+            sortBy={sortBy}
+            onSortChange={setSortBy}
+            selectedCount={selectedAssets.size}
           />
 
-          {/* Metadata panel */}
-          {activeAsset && !lightboxOpen && (
-            <MetadataPanel
-              asset={activeAsset}
-              onClose={() => setActiveAsset(null)}
+          {/* Asset grid/list */}
+          <div className="flex-1 flex min-h-0">
+            <AssetGrid
+              assets={filteredAssets}
+              selectedAssets={selectedAssets}
+              onSelectAsset={handleSelectAsset}
+              onOpenAsset={handleOpenAsset}
             />
-          )}
+
+            {/* Metadata panel */}
+            {activeAsset && !lightboxOpen && (
+              <MetadataPanel
+                asset={activeAsset}
+                onClose={() => setActiveAsset(null)}
+              />
+            )}
+          </div>
+
+          {/* Status bar */}
+          <div className="h-8 px-4 border-t border-border bg-surface-1 flex items-center justify-between text-xs text-muted-foreground">
+            <span>{filteredAssets.length} assets</span>
+            <span>
+              {selectedAssets.size > 0 
+                ? `${selectedAssets.size} selected — drag to organize` 
+                : 'Click to select, drag to collections or folders'}
+            </span>
+          </div>
         </div>
 
-        {/* Status bar */}
-        <div className="h-8 px-4 border-t border-border bg-surface-1 flex items-center justify-between text-xs text-muted-foreground">
-          <span>{filteredAssets.length} assets</span>
-          <span>
-            {selectedAssets.size > 0 
-              ? `${selectedAssets.size} selected` 
-              : 'Click to select, Double-click to open lightbox'}
-          </span>
-        </div>
+        {/* Lightbox */}
+        <Lightbox
+          assets={filteredAssets}
+          initialIndex={lightboxIndex}
+          isOpen={lightboxOpen}
+          onClose={() => setLightboxOpen(false)}
+          onAssetChange={handleLightboxAssetChange}
+        />
       </div>
-
-      {/* Lightbox */}
-      <Lightbox
-        assets={filteredAssets}
-        initialIndex={lightboxIndex}
-        isOpen={lightboxOpen}
-        onClose={() => setLightboxOpen(false)}
-        onAssetChange={handleLightboxAssetChange}
-      />
-    </div>
+    </DragProvider>
   );
 };
 

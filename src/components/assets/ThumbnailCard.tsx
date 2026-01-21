@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { Star, Check, MoreHorizontal } from 'lucide-react';
+import { Star, Check, MoreHorizontal, GripVertical } from 'lucide-react';
 import { Asset } from '@/types/asset';
 import { cn } from '@/lib/utils';
+import { useDrag } from '@/contexts/DragContext';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,6 +14,7 @@ import {
 interface ThumbnailCardProps {
   asset: Asset;
   isSelected: boolean;
+  selectedAssets: Asset[];
   onSelect: (asset: Asset, multi: boolean) => void;
   onClick: (asset: Asset) => void;
 }
@@ -67,9 +69,17 @@ const RatingStars = ({ rating }: { rating: number }) => {
   );
 };
 
-export const ThumbnailCard = ({ asset, isSelected, onSelect, onClick }: ThumbnailCardProps) => {
+export const ThumbnailCard = ({ 
+  asset, 
+  isSelected, 
+  selectedAssets,
+  onSelect, 
+  onClick 
+}: ThumbnailCardProps) => {
   const [isHovered, setIsHovered] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
+  const [isDraggingThis, setIsDraggingThis] = useState(false);
+  const { startDrag, endDrag, isDragging } = useDrag();
 
   const handleClick = (e: React.MouseEvent) => {
     if (e.metaKey || e.ctrlKey || e.shiftKey) {
@@ -85,12 +95,50 @@ export const ThumbnailCard = ({ asset, isSelected, onSelect, onClick }: Thumbnai
     onSelect(asset, e.metaKey || e.ctrlKey || e.shiftKey);
   };
 
+  const handleDragStart = (e: React.DragEvent) => {
+    // If this asset is selected, drag all selected assets
+    // Otherwise, just drag this one
+    const assetsToDrag = isSelected ? selectedAssets : [asset];
+    
+    startDrag(assetsToDrag);
+    setIsDraggingThis(true);
+
+    // Set drag data
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('application/json', JSON.stringify(assetsToDrag.map(a => a.id)));
+
+    // Create custom drag image
+    const dragPreview = document.createElement('div');
+    dragPreview.className = 'fixed pointer-events-none z-50 bg-surface-2 border border-primary rounded-lg p-2 shadow-xl flex items-center gap-2';
+    dragPreview.innerHTML = `
+      <img src="${asset.thumbnailUrl}" class="w-10 h-10 rounded object-cover" />
+      <span class="text-sm font-medium text-foreground">${assetsToDrag.length > 1 ? `${assetsToDrag.length} items` : asset.filename}</span>
+    `;
+    dragPreview.style.position = 'absolute';
+    dragPreview.style.top = '-1000px';
+    document.body.appendChild(dragPreview);
+    e.dataTransfer.setDragImage(dragPreview, 0, 0);
+    
+    // Clean up after a tick
+    setTimeout(() => document.body.removeChild(dragPreview), 0);
+  };
+
+  const handleDragEnd = () => {
+    endDrag();
+    setIsDraggingThis(false);
+  };
+
   return (
     <div
       className={cn(
         'thumbnail-card group',
-        isSelected && 'selected'
+        isSelected && 'selected',
+        isDraggingThis && 'opacity-50 scale-95',
+        isDragging && !isDraggingThis && 'pointer-events-none'
       )}
+      draggable
+      onDragStart={handleDragStart}
+      onDragEnd={handleDragEnd}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       onClick={handleClick}
@@ -108,6 +156,7 @@ export const ThumbnailCard = ({ asset, isSelected, onSelect, onClick }: Thumbnai
             imageLoaded ? 'opacity-100' : 'opacity-0'
           )}
           onLoad={() => setImageLoaded(true)}
+          draggable={false}
         />
 
         {/* Overlay controls */}
@@ -118,17 +167,24 @@ export const ThumbnailCard = ({ asset, isSelected, onSelect, onClick }: Thumbnai
         )}>
           {/* Top row - selection & menu */}
           <div className="absolute top-2 left-2 right-2 flex items-center justify-between">
-            <button
-              onClick={handleCheckboxClick}
-              className={cn(
-                'w-5 h-5 rounded border-2 flex items-center justify-center transition-all',
-                isSelected 
-                  ? 'bg-primary border-primary' 
-                  : 'border-white/70 hover:border-white bg-black/20'
-              )}
-            >
-              {isSelected && <Check className="h-3 w-3 text-primary-foreground" />}
-            </button>
+            <div className="flex items-center gap-1">
+              <button
+                onClick={handleCheckboxClick}
+                className={cn(
+                  'w-5 h-5 rounded border-2 flex items-center justify-center transition-all',
+                  isSelected 
+                    ? 'bg-primary border-primary' 
+                    : 'border-white/70 hover:border-white bg-black/20'
+                )}
+              >
+                {isSelected && <Check className="h-3 w-3 text-primary-foreground" />}
+              </button>
+              
+              {/* Drag handle indicator */}
+              <div className="p-1 rounded bg-black/40 cursor-grab active:cursor-grabbing opacity-0 group-hover:opacity-100 transition-opacity">
+                <GripVertical className="h-3 w-3 text-white/70" />
+              </div>
+            </div>
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>

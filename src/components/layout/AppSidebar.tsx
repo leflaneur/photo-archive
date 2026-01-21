@@ -12,37 +12,105 @@ import {
   Layers,
   Sparkles,
   Camera,
-  HardDrive
+  HardDrive,
+  Plus
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { mockFolders, mockCollections, stats } from '@/data/mockAssets';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { useDrag } from '@/contexts/DragContext';
+import { toast } from 'sonner';
 
-interface NavItemProps {
+interface DropTargetProps {
+  id: string;
   icon: React.ElementType;
   label: string;
   count?: number;
   isActive?: boolean;
   onClick?: () => void;
   indent?: number;
+  acceptDrop?: boolean;
 }
 
-const NavItem = ({ icon: Icon, label, count, isActive, onClick, indent = 0 }: NavItemProps) => (
-  <button
-    onClick={onClick}
-    className={cn(
-      'nav-item w-full',
-      isActive && 'active',
-    )}
-    style={{ paddingLeft: `${12 + indent * 16}px` }}
-  >
-    <Icon className="h-4 w-4 shrink-0" />
-    <span className="flex-1 text-left truncate">{label}</span>
-    {count !== undefined && (
-      <span className="text-xs text-muted-foreground tabular-nums">{count.toLocaleString()}</span>
-    )}
-  </button>
-);
+const DropTarget = ({ 
+  id,
+  icon: Icon, 
+  label, 
+  count, 
+  isActive, 
+  onClick, 
+  indent = 0,
+  acceptDrop = true 
+}: DropTargetProps) => {
+  const [isOver, setIsOver] = useState(false);
+  const { isDragging, draggedAssets, setDragOverTarget, endDrag } = useDrag();
+
+  const handleDragOver = (e: React.DragEvent) => {
+    if (!acceptDrop || !isDragging) return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    setIsOver(true);
+    setDragOverTarget(id);
+  };
+
+  const handleDragLeave = () => {
+    setIsOver(false);
+    setDragOverTarget(null);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsOver(false);
+    setDragOverTarget(null);
+
+    if (!acceptDrop || draggedAssets.length === 0) return;
+
+    // Show success toast
+    const assetCount = draggedAssets.length;
+    toast.success(
+      `Added ${assetCount} ${assetCount === 1 ? 'asset' : 'assets'} to "${label}"`,
+      {
+        description: draggedAssets.slice(0, 3).map(a => a.filename).join(', ') + 
+          (assetCount > 3 ? ` and ${assetCount - 3} more` : ''),
+      }
+    );
+
+    endDrag();
+  };
+
+  return (
+    <button
+      onClick={onClick}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+      className={cn(
+        'nav-item w-full transition-all duration-200',
+        isActive && 'active',
+        isOver && 'bg-primary/20 border-2 border-primary border-dashed scale-[1.02]',
+        isDragging && acceptDrop && 'ring-1 ring-primary/30'
+      )}
+      style={{ paddingLeft: `${12 + indent * 16}px` }}
+    >
+      <Icon className={cn(
+        'h-4 w-4 shrink-0 transition-colors',
+        isOver && 'text-primary'
+      )} />
+      <span className={cn(
+        'flex-1 text-left truncate transition-colors',
+        isOver && 'text-primary font-medium'
+      )}>
+        {label}
+      </span>
+      {isOver && (
+        <Plus className="h-3 w-3 text-primary animate-scale-in" />
+      )}
+      {count !== undefined && !isOver && (
+        <span className="text-xs text-muted-foreground tabular-nums">{count.toLocaleString()}</span>
+      )}
+    </button>
+  );
+};
 
 interface FolderItemProps {
   folder: typeof mockFolders[0];
@@ -53,7 +121,40 @@ interface FolderItemProps {
 
 const FolderItem = ({ folder, level = 0, activeId, onSelect }: FolderItemProps) => {
   const [isOpen, setIsOpen] = useState(level === 0);
+  const [isOver, setIsOver] = useState(false);
+  const { isDragging, draggedAssets, setDragOverTarget, endDrag } = useDrag();
   const hasChildren = folder.children.length > 0;
+
+  const handleDragOver = (e: React.DragEvent) => {
+    if (!isDragging) return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    setIsOver(true);
+    setDragOverTarget(folder.id);
+  };
+
+  const handleDragLeave = () => {
+    setIsOver(false);
+    setDragOverTarget(null);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsOver(false);
+    setDragOverTarget(null);
+
+    if (draggedAssets.length === 0) return;
+
+    const assetCount = draggedAssets.length;
+    toast.success(
+      `Moved ${assetCount} ${assetCount === 1 ? 'asset' : 'assets'} to "${folder.name}"`,
+      {
+        description: `Path: ${folder.path}`,
+      }
+    );
+
+    endDrag();
+  };
 
   return (
     <div>
@@ -62,25 +163,48 @@ const FolderItem = ({ folder, level = 0, activeId, onSelect }: FolderItemProps) 
           if (hasChildren) setIsOpen(!isOpen);
           onSelect?.(folder.id);
         }}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
         className={cn(
-          'nav-item w-full group',
+          'nav-item w-full group transition-all duration-200',
           activeId === folder.id && 'active',
+          isOver && 'bg-primary/20 border-2 border-primary border-dashed scale-[1.02]',
+          isDragging && 'ring-1 ring-primary/30'
         )}
         style={{ paddingLeft: `${12 + level * 16}px` }}
       >
         {hasChildren ? (
           isOpen ? (
-            <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" />
+            <ChevronDown className={cn(
+              'h-4 w-4 shrink-0 text-muted-foreground transition-colors',
+              isOver && 'text-primary'
+            )} />
           ) : (
-            <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
+            <ChevronRight className={cn(
+              'h-4 w-4 shrink-0 text-muted-foreground transition-colors',
+              isOver && 'text-primary'
+            )} />
           )
         ) : (
-          <Folder className="h-4 w-4 shrink-0" />
+          <Folder className={cn(
+            'h-4 w-4 shrink-0 transition-colors',
+            isOver && 'text-primary'
+          )} />
         )}
-        <span className="flex-1 text-left truncate">{folder.name}</span>
-        <span className="text-xs text-muted-foreground tabular-nums">
-          {folder.assetCount.toLocaleString()}
+        <span className={cn(
+          'flex-1 text-left truncate transition-colors',
+          isOver && 'text-primary font-medium'
+        )}>
+          {folder.name}
         </span>
+        {isOver ? (
+          <Plus className="h-3 w-3 text-primary animate-scale-in" />
+        ) : (
+          <span className="text-xs text-muted-foreground tabular-nums">
+            {folder.assetCount.toLocaleString()}
+          </span>
+        )}
       </button>
       {hasChildren && isOpen && (
         <div>
@@ -106,9 +230,13 @@ interface AppSidebarProps {
 
 export const AppSidebar = ({ activeSection, onSectionChange }: AppSidebarProps) => {
   const [activeFolderId, setActiveFolderId] = useState<string>();
+  const { isDragging } = useDrag();
 
   return (
-    <aside className="w-64 h-full bg-sidebar border-r border-sidebar-border flex flex-col">
+    <aside className={cn(
+      'w-64 h-full bg-sidebar border-r border-sidebar-border flex flex-col transition-all duration-200',
+      isDragging && 'bg-sidebar/95'
+    )}>
       {/* Logo / Header */}
       <div className="p-4 border-b border-sidebar-border">
         <div className="flex items-center gap-3">
@@ -122,6 +250,15 @@ export const AppSidebar = ({ activeSection, onSectionChange }: AppSidebarProps) 
         </div>
       </div>
 
+      {/* Drag indicator */}
+      {isDragging && (
+        <div className="mx-2 mt-2 px-3 py-2 bg-primary/10 border border-primary/30 rounded-lg animate-fade-in">
+          <p className="text-xs text-primary font-medium text-center">
+            Drop on a collection or folder
+          </p>
+        </div>
+      )}
+
       <ScrollArea className="flex-1">
         <div className="p-2 space-y-6">
           {/* Quick Access */}
@@ -129,32 +266,39 @@ export const AppSidebar = ({ activeSection, onSectionChange }: AppSidebarProps) 
             <p className="px-3 py-2 text-xs font-medium text-muted-foreground uppercase tracking-wider">
               Quick Access
             </p>
-            <NavItem
+            <DropTarget
+              id="all"
               icon={Image}
               label="All Assets"
               count={stats.totalAssets}
               isActive={activeSection === 'all'}
               onClick={() => onSectionChange('all')}
+              acceptDrop={false}
             />
-            <NavItem
+            <DropTarget
+              id="recent"
               icon={Clock}
               label="Recent"
               isActive={activeSection === 'recent'}
               onClick={() => onSectionChange('recent')}
+              acceptDrop={false}
             />
-            <NavItem
+            <DropTarget
+              id="favorites"
               icon={Star}
               label="Favorites"
               count={127}
               isActive={activeSection === 'favorites'}
               onClick={() => onSectionChange('favorites')}
             />
-            <NavItem
+            <DropTarget
+              id="uploads"
               icon={Upload}
               label="Uploads"
               count={23}
               isActive={activeSection === 'uploads'}
               onClick={() => onSectionChange('uploads')}
+              acceptDrop={false}
             />
           </div>
 
@@ -163,28 +307,32 @@ export const AppSidebar = ({ activeSection, onSectionChange }: AppSidebarProps) 
             <p className="px-3 py-2 text-xs font-medium text-muted-foreground uppercase tracking-wider">
               Workflow
             </p>
-            <NavItem
+            <DropTarget
+              id="drafts"
               icon={FolderOpen}
               label="Drafts"
               count={stats.drafts}
               isActive={activeSection === 'drafts'}
               onClick={() => onSectionChange('drafts')}
             />
-            <NavItem
+            <DropTarget
+              id="editing"
               icon={Sparkles}
               label="Editing"
               count={stats.editing}
               isActive={activeSection === 'editing'}
               onClick={() => onSectionChange('editing')}
             />
-            <NavItem
+            <DropTarget
+              id="approved"
               icon={Layers}
               label="Approved"
               count={stats.approved}
               isActive={activeSection === 'approved'}
               onClick={() => onSectionChange('approved')}
             />
-            <NavItem
+            <DropTarget
+              id="published"
               icon={HardDrive}
               label="Published"
               count={stats.published}
@@ -199,13 +347,15 @@ export const AppSidebar = ({ activeSection, onSectionChange }: AppSidebarProps) 
               Collections
             </p>
             {mockCollections.map((collection) => (
-              <NavItem
+              <DropTarget
                 key={collection.id}
+                id={collection.id}
                 icon={collection.isSmartCollection ? Sparkles : Layers}
                 label={collection.name}
                 count={collection.assetCount}
                 isActive={activeSection === collection.id}
                 onClick={() => onSectionChange(collection.id)}
+                acceptDrop={!collection.isSmartCollection}
               />
             ))}
           </div>
@@ -232,11 +382,13 @@ export const AppSidebar = ({ activeSection, onSectionChange }: AppSidebarProps) 
 
       {/* Footer */}
       <div className="p-2 border-t border-sidebar-border">
-        <NavItem
+        <DropTarget
+          id="settings"
           icon={Settings}
           label="Settings"
           isActive={activeSection === 'settings'}
           onClick={() => onSectionChange('settings')}
+          acceptDrop={false}
         />
       </div>
     </aside>
