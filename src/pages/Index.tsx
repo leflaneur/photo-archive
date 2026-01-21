@@ -14,6 +14,7 @@ import { DragProvider } from '@/contexts/DragContext';
 import { toast } from 'sonner';
 
 const Index = () => {
+  // All hooks must be called unconditionally at the top
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [activeSection, setActiveSection] = useState('all');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
@@ -23,19 +24,12 @@ const Index = () => {
   const [activeAsset, setActiveAsset] = useState<Asset | null>(null);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
-  
-  // New state for panels and dialogs
   const [showBatchEdit, setShowBatchEdit] = useState(false);
   const [showCollectionManager, setShowCollectionManager] = useState(false);
   const [showPublishDialog, setShowPublishDialog] = useState(false);
   const [collections, setCollections] = useState<Collection[]>(initialCollections);
 
-  // Show login page if not authenticated
-  if (!isAuthenticated) {
-    return <LoginPage onLogin={() => setIsAuthenticated(true)} />;
-  }
-
-  // Filter and sort assets
+  // Filter and sort assets - must be called before any conditional returns
   const filteredAssets = useMemo(() => {
     let result = [...mockAssets];
 
@@ -93,6 +87,11 @@ const Index = () => {
     [filteredAssets, selectedAssets]
   );
 
+  // Show login page if not authenticated - AFTER all hooks
+  if (!isAuthenticated) {
+    return <LoginPage onLogin={() => setIsAuthenticated(true)} />;
+  }
+
   const handleSelectAsset = (asset: Asset, multi: boolean) => {
     setSelectedAssets(prev => {
       const next = new Set(prev);
@@ -130,9 +129,7 @@ const Index = () => {
   };
 
   const handleApplyBatchChanges = (changes: BatchChanges) => {
-    // In a real app, this would update the assets in the database
     console.log('Applying batch changes:', changes, 'to assets:', selectedAssetObjects);
-    // For now, we just show a success message (handled in BatchEditPanel)
   };
 
   // Collection handlers
